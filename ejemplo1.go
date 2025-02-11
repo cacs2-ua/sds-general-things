@@ -24,6 +24,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"unicode"
 )
 
@@ -32,6 +33,7 @@ func main() {
 	var fin *os.File  // fichero de entrada
 	var fout *os.File // fichero de salida
 	var err error     // receptor de error
+	var modulo int
 
 	// alfabeto con el que vamos a trabajar
 	alfabeto := map[rune]int{'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'J': 9,
@@ -49,6 +51,15 @@ func main() {
 		fin = os.Stdin
 		fout = os.Stdout
 
+	} else if len(os.Args) == 2 {
+		fin = os.Stdin
+		fout = os.Stdout
+		modulo, err = strconv.Atoi(os.Args[1])
+		if err != nil {
+			fmt.Println("Error: el argumento no es un número válido")
+			os.Exit(1)
+		}
+
 	} else if len(os.Args) == 3 { // tenemos los nombres de los ficheros de entrada y salida en los parámetros
 		fin, err = os.Open(os.Args[1]) // abrimos el primer fichero (entrada)
 		if err != nil {
@@ -61,6 +72,23 @@ func main() {
 			panic(err)
 		}
 		defer fout.Close()
+	} else if len(os.Args) == 4 { // tenemos los nombres de los ficheros de entrada y salida en los parámetros
+		fin, err = os.Open(os.Args[1]) // abrimos el primer fichero (entrada)
+		if err != nil {
+			panic(err)
+		}
+		defer fin.Close()
+
+		fout, err = os.Create(os.Args[2]) // abrimos el segundo fichero (salida)
+		if err != nil {
+			panic(err)
+		}
+		defer fout.Close()
+		modulo, err = strconv.Atoi(os.Args[3])
+		if err != nil {
+			fmt.Println("Error: el argumento no es un número válido")
+			os.Exit(1)
+		}
 	} else { // error de parámetros
 		fmt.Println("Número de parámetros incorrecto: se espera los ficheros de origen y destino (1 y 2, opcionales)")
 		os.Exit(1)
@@ -82,7 +110,7 @@ func main() {
 
 		num, ok := alfabeto[C] // comprobamos que está en el alfabeto
 
-		desplazamiento = (num + 4) % 27
+		desplazamiento = (num + modulo) % 27
 
 		C_cesar = alfabetoInverso[desplazamiento]
 		if ok { // en tal caso imprimimos en la salida
