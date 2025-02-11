@@ -33,7 +33,10 @@ func main() {
 	var fin *os.File  // fichero de entrada
 	var fout *os.File // fichero de salida
 	var err error     // receptor de error
-	var modulo int
+	var lineas int
+	var matriz [][]rune
+	var numeroColumna int
+	var numeroFila int
 
 	// alfabeto con el que vamos a trabajar
 	alfabeto := map[rune]int{'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'J': 9,
@@ -47,14 +50,14 @@ func main() {
 	}
 
 	if len(os.Args) == 1 { // no hay parámetros, usamos entrada (teclado) y salida estándar (pantalla)
-
 		fin = os.Stdin
 		fout = os.Stdout
+		lineas = 0
 
 	} else if len(os.Args) == 2 {
 		fin = os.Stdin
 		fout = os.Stdout
-		modulo, err = strconv.Atoi(os.Args[1])
+		lineas, err = strconv.Atoi(os.Args[1])
 		if err != nil {
 			fmt.Println("Error: el argumento no es un número válido")
 			os.Exit(1)
@@ -84,7 +87,7 @@ func main() {
 			panic(err)
 		}
 		defer fout.Close()
-		modulo, err = strconv.Atoi(os.Args[3])
+		lineas, err = strconv.Atoi(os.Args[3])
 		if err != nil {
 			fmt.Println("Error: el argumento no es un número válido")
 			os.Exit(1)
@@ -96,26 +99,46 @@ func main() {
 
 	for { // bucle infinito
 		var c rune // carácter a leer
-		var desplazamiento int
-
-		var C_cesar rune
 
 		_, err = fmt.Fscanf(fin, "%c", &c) // lectura de la entrada
 
-		if err != nil { // si hay error (fin de fichero)
-			break //salimos del bucle
+		fmt.Printf("Leído: '%c' (ASCII: %d)\n", c, c)
+
+		if c == '\n' || c == 0 {
+			for j := 0; j < lineas; j++ {
+				for i := 0; i <= numeroFila; i++ {
+					if matriz[i][j] != 0 {
+						fmt.Fprintf(fout, "%c", matriz[i][j])
+					}
+
+				}
+			}
+			numeroColumna = 0
+			numeroFila = 0
+			matriz = [][]rune{}
+
+			if c == '\n' {
+				continue
+			} else {
+				break
+			}
+
+		}
+
+		if numeroColumna >= lineas {
+			numeroColumna = 0
+			numeroFila++
 		}
 
 		C := unicode.ToUpper(c) // pasamos a mayúsculas
 
-		num, ok := alfabeto[C] // comprobamos que está en el alfabeto
-
-		desplazamiento = (num + modulo) % 27
-
-		C_cesar = alfabetoInverso[desplazamiento]
-		if ok { // en tal caso imprimimos en la salida
-			fmt.Fprintf(fout, "%c", C_cesar)
+		if numeroFila >= len(matriz) {
+			matriz = append(matriz, make([]rune, lineas))
 		}
+
+		matriz[numeroFila][numeroColumna] = C
+		numeroColumna++
+
 	}
 
 }
